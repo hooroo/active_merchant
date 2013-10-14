@@ -14,17 +14,17 @@ module ActiveMerchant
       # usable:
       # American Express, ATM, Carte Blanche, Diners Club, Discover,
       # EnRoute, GE Capital, JCB, Laser, Maestro, Mastercard, Solo,
-      # Switch, Visa, Visa Delta, VISA Electron, Visa Purchasing 
+      # Switch, Visa, Visa Delta, VISA Electron, Visa Purchasing
       #
-      # Note continuous authority is only supported for :visa, :master and :american_express card types  
+      # Note continuous authority is only supported for :visa, :master and :american_express card types
       self.supported_cardtypes = [ :visa, :master, :american_express, :discover, :diners_club, :jcb, :maestro, :switch, :solo, :laser ]
 
       self.homepage_url = 'http://www.datacash.com/'
       self.display_name = 'DataCash'
 
       # Datacash server URLs
-      TEST_URL = 'https://testserver.datacash.com/Transaction'
-      LIVE_URL = 'https://mars.transaction.datacash.com/Transaction'
+      self.test_url = 'https://testserver.datacash.com/Transaction'
+      self.live_url = 'https://mars.transaction.datacash.com/Transaction'
 
       # Different Card Transaction Types
       AUTH_TYPE = 'auth'
@@ -43,25 +43,24 @@ module ActiveMerchant
       DATACASH_SUCCESS = '1'
 
       # Creates a new DataCashGateway
-      # 
+      #
       # The gateway requires that a valid login and password be passed
       # in the +options+ hash.
-      # 
+      #
       # ==== Options
       #
       # * <tt>:login</tt> -- The Datacash account login.
       # * <tt>:password</tt> -- The Datacash account password.
       # * <tt>:url</tt> -- The URL to post to. Defaults to the TEST_URL or LIVE_URL.
       # * <tt>:test => +true+ or +false+</tt> -- Use the test or live Datacash url.
-      #     
+      #
       def initialize(options = {})
         requires!(options, :login, :password)
-        @options = options
         super
       end
 
       # Perform a purchase, which is essentially an authorization and capture in a single operation.
-      # 
+      #
       # ==== Parameters
       # * <tt>money</tt> The amount to be authorized as an Integer value in cents.
       # * <tt>authorization_or_credit_card</tt>:: The continuous authority reference or CreditCard details for the transaction.
@@ -69,11 +68,11 @@ module ActiveMerchant
       #   * <tt>:order_id</tt> A unique reference for this order (corresponds to merchantreference in datacash documentation)
       #   * <tt>:set_up_continuous_authority</tt>
       #      Set to true to set up a recurring historic transaction account be set up.
-      #      Only supported for :visa, :master and :american_express card types 
-      #      See http://www.datacash.com/services/recurring/historic.php for more details of historic transactions. 
+      #      Only supported for :visa, :master and :american_express card types
+      #      See http://www.datacash.com/services/recurring/historic.php for more details of historic transactions.
       #   * <tt>:address</tt>:: billing address for card
       #
-      # The continuous authority reference will be available in response#params['ca_referece'] if you have requested one
+      # The continuous authority reference will be available in response#params['ca_reference'] if you have requested one
       def purchase(money, authorization_or_credit_card, options = {})
         requires!(options, :order_id)
 
@@ -86,7 +85,7 @@ module ActiveMerchant
         commit(request)
       end
 
-      # Performs an authorization, which reserves the funds on the customer's credit card, but does not 
+      # Performs an authorization, which reserves the funds on the customer's credit card, but does not
       # charge the card.
       #
       # ==== Parameters
@@ -97,11 +96,11 @@ module ActiveMerchant
       #   * <tt>:order_id</tt> A unique reference for this order (corresponds to merchantreference in datacash documentation)
       #   * <tt>:set_up_continuous_authority</tt>::
       #      Set to true to set up a recurring historic transaction account be set up.
-      #      Only supported for :visa, :master and :american_express card types 
-      #      See http://www.datacash.com/services/recurring/historic.php for more details of historic transactions. 
+      #      Only supported for :visa, :master and :american_express card types
+      #      See http://www.datacash.com/services/recurring/historic.php for more details of historic transactions.
       #   * <tt>:address</tt>:: billing address for card
       #
-      # The continuous authority reference will be available in response#params['ca_referece'] if you have requested one
+      # The continuous authority reference will be available in response#params['ca_reference'] if you have requested one
       def authorize(money, authorization_or_credit_card, options = {})
         requires!(options, :order_id)
 
@@ -115,20 +114,20 @@ module ActiveMerchant
       end
 
       # Captures the funds from an authorized transaction.
-      # 
+      #
       # ==== Parameters
       #
       # * <tt>money</tt> -- The amount to be captured as anInteger value in cents.
-      # * <tt>authorization</tt> -- The authorization returned from the previous authorize request.   
+      # * <tt>authorization</tt> -- The authorization returned from the previous authorize request.
       def capture(money, authorization, options = {})
         commit(build_void_or_capture_request(FULFILL_TYPE, money, authorization, options))
-      end                    
+      end
 
       # Void a previous transaction
-      # 
+      #
       # ==== Parameters
       #
-      # * <tt>authorization</tt> - The authorization returned from the previous authorize request.   
+      # * <tt>authorization</tt> - The authorization returned from the previous authorize request.
       def void(authorization, options = {})
         request = build_void_or_capture_request(CANCEL_TYPE, nil, authorization, options)
 
@@ -136,7 +135,7 @@ module ActiveMerchant
       end
 
       # Refund to a card
-      # 
+      #
       # ==== Parameters
       #
       # * <tt>money</tt> The amount to be refunded as an Integer value in cents. Set to nil for a full refund on existing transaction.
@@ -158,14 +157,9 @@ module ActiveMerchant
         commit(build_transaction_refund_request(money, reference))
       end
 
-      # Is the gateway running in test mode?
-      def test?
-        @options[:test] || super
-      end
-
-      private                         
+      private
       # Create the xml document for a 'cancel' or 'fulfill' transaction.
-      # 
+      #
       # Final XML should look like:
       # <Request version="2">
       #  <Authentication>
@@ -183,14 +177,14 @@ module ActiveMerchant
       #    </HistoricTxn>
       #  </Transaction>
       # </Request>
-      # 
+      #
       # Parameters:
       # * <tt>type</tt> must be FULFILL_TYPE or CANCEL_TYPE
       # * <tt>money</tt> - optional - Integer value in cents
       # * <tt>authorization</tt> - the Datacash authorization from a previous succesful authorize transaction
       # * <tt>options</tt>
       #   * <tt>order_id</tt> - A unique reference for the transaction
-      #   
+      #
       # Returns:
       #   -Builder xml document
       #
@@ -201,14 +195,14 @@ module ActiveMerchant
         xml.instruct!
         xml.tag! :Request, version_options do
           add_authentication(xml)
-          
+
           xml.tag! :Transaction do
             xml.tag! :HistoricTxn do
               xml.tag! :reference, reference
               xml.tag! :authcode, auth_code
               xml.tag! :method, type
             end
-            
+
             if money
               xml.tag! :TxnDetails do
                 xml.tag! :merchantreference, format_reference_number(options[:order_id])
@@ -221,9 +215,9 @@ module ActiveMerchant
       end
 
       # Create the xml document for an 'auth' or 'pre' transaction with a credit card
-      # 
+      #
       # Final XML should look like:
-      # 
+      #
       # <Request version="2">
       #  <Authentication>
       #    <client>99000000</client>
@@ -269,7 +263,7 @@ module ActiveMerchant
       #    </CardTxn>
       #  </Transaction>
       # </Request>
-      # 
+      #
       # Parameters:
       #   -type must be 'auth' or 'pre'
       #   -money - A money object with the price and currency
@@ -278,7 +272,7 @@ module ActiveMerchant
       #     :order_id is the merchant reference number
       #     :billing_address is the billing address for the cc
       #     :address is the delivery address
-      #   
+      #
       # Returns:
       #   -xml: Builder document containing the markup
       #
@@ -287,7 +281,7 @@ module ActiveMerchant
         xml.instruct!
         xml.tag! :Request, version_options do
           add_authentication(xml)
-          
+
           xml.tag! :Transaction do
             if options[:set_up_continuous_authority]
               xml.tag! :ContAuthTxn, :type => 'setup'
@@ -310,35 +304,35 @@ module ActiveMerchant
 
       # Create the xml document for an 'auth' or 'pre' transaction with
       # continuous authorization
-      # 
+      #
       # Final XML should look like:
-      # 
-      # <Request version="2"> 
-      #   <Transaction> 
-      #     <ContAuthTxn type="historic" /> 
-      #     <TxnDetails> 
-      #       <merchantreference>3851231</merchantreference> 
-      #       <capturemethod>cont_auth</capturemethod> 
-      #       <amount currency="GBP">18.50</amount> 
-      #     </TxnDetails> 
-      #     <HistoricTxn> 
-      #       <reference>4500200040925092</reference> 
-      #       <method>auth</method> 
-      #     </HistoricTxn> 
-      #   </Transaction> 
-      #   <Authentication> 
-      #     <client>99000001</client> 
-      #     <password>mypasswd</password> 
-      #   </Authentication> 
+      #
+      # <Request version="2">
+      #   <Transaction>
+      #     <ContAuthTxn type="historic" />
+      #     <TxnDetails>
+      #       <merchantreference>3851231</merchantreference>
+      #       <capturemethod>cont_auth</capturemethod>
+      #       <amount currency="GBP">18.50</amount>
+      #     </TxnDetails>
+      #     <HistoricTxn>
+      #       <reference>4500200040925092</reference>
+      #       <method>auth</method>
+      #     </HistoricTxn>
+      #   </Transaction>
+      #   <Authentication>
+      #     <client>99000001</client>
+      #     <password>mypasswd</password>
+      #   </Authentication>
       # </Request>
-      # 
+      #
       # Parameters:
       #   -type must be 'auth' or 'pre'
       #   -money - A money object with the price and currency
       #   -authorization - The authorization containing a continuous authority reference previously set up on a credit card
       #   -options:
       #     :order_id is the merchant reference number
-      #   
+      #
       # Returns:
       #   -xml: Builder document containing the markup
       #
@@ -367,25 +361,25 @@ module ActiveMerchant
       end
 
       # Create the xml document for a full or partial refund transaction with
-      # 
+      #
       # Final XML should look like:
       #
-      # <Request version="2"> 
-      #   <Authentication> 
-      #     <client>99000001</client> 
-      #     <password>*******</password> 
-      #   </Authentication> 
-      #   <Transaction> 
-      #     <HistoricTxn> 
-      #       <method>txn_refund</method> 
-      #       <reference>12345678</reference> 
-      #     </HistoricTxn> 
-      #     <TxnDetails> 
-      #       <amount>10.00</amount> 
-      #     </TxnDetails> 
+      # <Request version="2">
+      #   <Authentication>
+      #     <client>99000001</client>
+      #     <password>*******</password>
+      #   </Authentication>
+      #   <Transaction>
+      #     <HistoricTxn>
+      #       <method>txn_refund</method>
+      #       <reference>12345678</reference>
+      #     </HistoricTxn>
+      #     <TxnDetails>
+      #       <amount>10.00</amount>
+      #     </TxnDetails>
       #   </Transaction>
-      # </Request> 
-      # 
+      # </Request>
+      #
       def build_transaction_refund_request(money, reference)
         xml = Builder::XmlMarkup.new :indent => 2
         xml.instruct!
@@ -407,27 +401,27 @@ module ActiveMerchant
       end
 
       # Create the xml document for a full or partial refund  with
-      # 
+      #
       # Final XML should look like:
       #
-      # <Request version="2"> 
-      #   <Authentication> 
-      #     <client>99000001</client> 
-      #     <password>*****</password> 
-      #   </Authentication> 
-      #   <Transaction> 
-      #     <CardTxn> 
-      #       <Card> 
-      #         <pan>633300*********1</pan> 
-      #         <expirydate>04/06</expirydate> 
-      #         <startdate>01/04</startdate> 
-      #       </Card> 
-      #       <method>refund</method> 
-      #     </CardTxn> 
-      #     <TxnDetails> 
-      #       <merchantreference>1000001</merchantreference> 
-      #       <amount currency="GBP">95.99</amount> 
-      #     </TxnDetails> 
+      # <Request version="2">
+      #   <Authentication>
+      #     <client>99000001</client>
+      #     <password>*****</password>
+      #   </Authentication>
+      #   <Transaction>
+      #     <CardTxn>
+      #       <Card>
+      #         <pan>633300*********1</pan>
+      #         <expirydate>04/06</expirydate>
+      #         <startdate>01/04</startdate>
+      #       </Card>
+      #       <method>refund</method>
+      #     </CardTxn>
+      #     <TxnDetails>
+      #       <merchantreference>1000001</merchantreference>
+      #       <amount currency="GBP">95.99</amount>
+      #     </TxnDetails>
       #   </Transaction>
       # </Request>
       def build_refund_request(money, credit_card, options)
@@ -451,13 +445,13 @@ module ActiveMerchant
 
 
       # Adds the authentication element to the passed builder xml doc
-      # 
+      #
       # Parameters:
       #   -xml: Builder document that is being built up
-      #   
+      #
       # Returns:
       #   -none: The results is stored in the passed xml document
-      #   
+      #
       def add_authentication(xml)
         xml.tag! :Authentication do
           xml.tag! :client, @options[:login]
@@ -465,18 +459,18 @@ module ActiveMerchant
         end
       end
 
-      # Add credit_card detals to the passed XML Builder doc
-      # 
+      # Add credit_card details to the passed XML Builder doc
+      #
       # Parameters:
       #   -xml: Builder document that is being built up
       #   -credit_card: ActiveMerchant::Billing::CreditCard object
       #   -billing_address: Hash containing all of the billing address details
-      #   
+      #
       # Returns:
       #   -none: The results is stored in the passed xml document
-      #   
+      #
       def add_credit_card(xml, credit_card, address)
-        
+
         xml.tag! :Card do
 
           # DataCash calls the CC number 'pan'
@@ -485,7 +479,7 @@ module ActiveMerchant
 
           # optional values - for Solo etc
           if [ 'switch', 'solo' ].include?(card_brand(credit_card).to_s)
-            
+
             xml.tag! :issuenumber, credit_card.issue_number unless credit_card.issue_number.blank?
 
             if !credit_card.start_month.blank? && !credit_card.start_year.blank?
@@ -503,14 +497,14 @@ module ActiveMerchant
               xml.tag! :postcode, address[:zip] unless address[:zip].blank?
             end
 
-            # The ExtendedPolicy defines what to do when the passed data 
+            # The ExtendedPolicy defines what to do when the passed data
             # matches, or not...
-            # 
+            #
             # All of the following elements MUST be present for the
             # xml to be valid (or can drop the ExtendedPolicy and use
             # a predefined one
             xml.tag! :ExtendedPolicy do
-              xml.tag! :cv2_policy, 
+              xml.tag! :cv2_policy,
               :notprovided =>   POLICY_REJECT,
               :notchecked =>    POLICY_REJECT,
               :matched =>       POLICY_ACCEPT,
@@ -522,7 +516,7 @@ module ActiveMerchant
               :matched =>       POLICY_ACCEPT,
               :notmatched =>    POLICY_REJECT,
               :partialmatch =>  POLICY_ACCEPT
-              xml.tag! :address_policy, 
+              xml.tag! :address_policy,
               :notprovided =>   POLICY_ACCEPT,
               :notchecked =>    POLICY_ACCEPT,
               :matched =>       POLICY_ACCEPT,
@@ -534,15 +528,15 @@ module ActiveMerchant
       end
 
       # Send the passed data to DataCash for processing
-      # 
+      #
       # Parameters:
       #   -request: The XML data that is to be sent to Datacash
-      #   
+      #
       # Returns:
       #   - ActiveMerchant::Billing::DataCashGateway::DataCashResponse object
-      #   
+      #
       def commit(request)
-        url = @options[:url] || (test? ? TEST_URL : LIVE_URL)
+        url = @options[:url] || (test? ? self.test_url : self.live_url)
         response = ssl_post(url, request, { 'Content-Type' => 'text/xml' })
         parsed = parse(response)
 
@@ -557,11 +551,11 @@ module ActiveMerchant
       end
 
       # Returns a date string in the format Datacash expects
-      # 
+      #
       # Parameters:
       #   -month: integer, the month
       #   -year: integer, the year
-      # 
+      #
       # Returns:
       #   -String: date in MM/YY format
       #
@@ -573,10 +567,10 @@ module ActiveMerchant
       #
       # Parameters:
       #   -body: The XML returned from Datacash
-      # 
+      #
       # Returns:
       #   -a hash with all of the values returned in the Datacash XML response
-      # 
+      #
       def parse(body)
 
         response = {}
@@ -588,14 +582,14 @@ module ActiveMerchant
         end
 
         response
-      end     
+      end
 
       # Parse an xml element
       #
       # Parameters:
       #   -response: The hash that the values are being returned in
       #   -node: The node that is currently being read
-      # 
+      #
       # Returns:
       # -  none (results are stored in the passed hash)
       def parse_element(response, node)
