@@ -10,6 +10,7 @@ rescue LoadError => e
 end
 
 require 'test/unit'
+
 require 'money'
 require 'mocha/version'
 if(Mocha::VERSION.split(".")[1].to_i < 12)
@@ -61,7 +62,6 @@ end
 class SubclassGateway < SimpleTestGateway
 end
 
-
 module ActiveMerchant
   module Assertions
     AssertionClass = RUBY_VERSION > '1.9' ? MiniTest::Assertion : Test::Unit::AssertionFailedError
@@ -72,7 +72,7 @@ module ActiveMerchant
       end
     end
 
-    # Allows the testing of you to check for negative assertions:
+    # Allows testing of negative assertions:
     #
     #   # Instead of
     #   assert !something_that_is_false
@@ -91,26 +91,26 @@ module ActiveMerchant
       end
     end
 
-    # A handy little assertion to check for a successful response:
+    # An assertion of a successful response:
     #
     #   # Instead of
-    #   assert_success response
+    #   assert response.success?
     #
     #   # DRY that up with
     #   assert_success response
     #
     # A message will automatically show the inspection of the response
     # object if things go afoul.
-    def assert_success(response)
+    def assert_success(response, message=nil)
       clean_backtrace do
-        assert response.success?, "Response failed: #{response.inspect}"
+        assert response.success?, build_message(nil, "#{message + "\n" if message}Response expected to succeed: <?>", response)
       end
     end
 
     # The negative of +assert_success+
-    def assert_failure(response)
+    def assert_failure(response, message=nil)
       clean_backtrace do
-        assert_false response.success?, "Response expected to fail: #{response.inspect}"
+        assert !response.success?, build_message(nil, "#{message + "\n" if message}Response expected to fail: <?>", response)
       end
     end
 
@@ -231,7 +231,6 @@ Test::Unit::TestCase.class_eval do
 end
 
 module ActionViewHelperTestHelper
-
   def self.included(base)
     base.send(:include, ActiveMerchant::Billing::Integrations::ActionViewHelper)
     base.send(:include, ActionView::Helpers::FormHelper)

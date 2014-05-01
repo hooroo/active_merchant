@@ -10,6 +10,11 @@
 #
 # Paste any required PEM certificates after the pem key.
 #
+
+app55:
+  api_key: "QDtACYMCFqtuKOQ22QtCkGR1TzD7XM8i"
+  api_secret: "yT1FRpuusBIQoEBIfIQ8bPStkl7yzdTz"
+
 authorize_net:
   login: X
   password: Y
@@ -59,11 +64,17 @@ braintree_blue:
   merchant_id: X
   public_key: Y
   private_key: Z
+  merchant_account_id: A
 
 braintree_blue_with_processing_rules:
   merchant_id: X
   public_key: Y
   private_key: Z
+
+# Working credentials, no need to replace
+bridge_pay:
+  user_name: Spre3676
+  password: H3392nc5
 
 #Username/Password given in sign up email. Not MMS credentials
 card_save:
@@ -74,16 +85,25 @@ card_stream:
   login: X
   password: Y
 
-card_stream_modern:
-  login: "0000992"
+cecabank:
+  merchant_id: MERCHANTID
+  acquirer_bin: ACQUIRERBIN
+  terminal_id: TERMINALID
+  key: KEY
 
 certo_direct:
   login: 1
   password: vP6OwK3
 
+# To get 100% passing Cybersource remote tests, you must ask
+# Cybersource support to enable the recurring and pinless debit
+# services on your test account.
 cyber_source:
   login: X
   password: Y
+
+conekta:
+  key: 1tv5yJp3xnVZ7eK67m4h
 
 data_cash:
   login: X
@@ -151,6 +171,11 @@ firstdata_e4:
   login:
   password:
 
+first_giving:
+  application_key: ''
+  security_token:  ''
+  charity_id: "1234"
+
 garanti:
   login: "PROVAUT"
   terminal_id: 111995
@@ -199,6 +224,11 @@ litle:
   login: ACTIVE
   password: MERCHANT
   merchant_id: 101
+
+# Working test credentials, no need to replace
+maxipago:
+  login: "100"
+  password: "21g8u6gh6szw1gywfs165vui"
 
 # Working test credentials, no need to replace
 merchant_esolutions:
@@ -309,6 +339,11 @@ ogone:
   password: PASSWORD
   signature: SIGNATURE
 
+# Working credentials, no need to replace
+openpay:
+  key: 'sk_e568c42a6c384b7ab02cd47d2e407cab'
+  merchant_id: 'mzdtln0bmtms6o3kck8f'
+
 optimal_payment:
   login: test
   password: test
@@ -327,6 +362,11 @@ orbital_gateway:
 pay_gate_xml:
   login: '10011021600'
   password: 'test'
+
+payex:
+  account: ACCOUNT
+  # encryption key is generated via the PayEx Admin console
+  encryption_key: ENCRYPTION_KEY
 
 payflow:
   login: LOGIN
@@ -363,6 +403,10 @@ paypal_signature:
   login: LOGIN
   password: PASSWORD
   signature: SIGNATURE
+
+payu_in:
+  login: C0Dr8m
+  secret: 3sf0jURk
 
 payway:
   username:
@@ -456,6 +500,10 @@ psl_visa_debit_address:
   state:
   zip:
 
+payscout:
+  username: demo
+  password: password
+
 # Quickpay offers a test account.
 # To log in to the manager, use demo@quickpay.net and test234
 quickpay:
@@ -472,6 +520,11 @@ quickpay_with_api_key:
 quantum:
   login: X
   password: Y
+
+raven_pac_net:
+  user: ernest
+  secret: "all good men die young"
+  prn: 840033
 
 realex:
   login: X
@@ -578,6 +631,10 @@ skipjack:
   login: X
   password: Y
 
+so_easy_pay:
+  login: 110159
+  password: b1fe9de37c234ef8fd53668377076687d6314dc8f6146023338d61b5969719e0
+
 # Working credentials, no need to replace
 spreedly_core:
   login: "4Y9bVkOCpYesPQOfDi7TXQyUw50"
@@ -588,6 +645,12 @@ stripe:
   login:
   fee_refund_login:
 
+# Working credentials, no need to replace
+swipe_checkout:
+  login: 2077103073D8B5
+  api_key: f2fe4efd5033edfaed9e4aad319ef4d34536a10eea07f90f182616d7216ae2b8
+  region: NZ
+
 trans_first:
   login: LOGIN
   password: PASSWORD
@@ -596,7 +659,7 @@ transax:
   login: transaxdemo
   password: nelix123
 
-transnational:
+network_merchants:
   login: demo
   password: password
 
@@ -637,6 +700,12 @@ webpay:
   login: "test_secret_eHn4TTgsGguBcW764a2KA8Yd"
 
 # Working test credentials, no need to replace
+wepay:
+  client_id: "187493"
+  account_id: "1311201206"
+  access_token: "STAGE_4c6a319f9b6ef50e596ee3ea0b845f2fecd50fa0d8bc0b7483bd61c2018dbf5c"
+
+# Working test credentials, no need to replace
 wirecard:
   login: 56500
   password: TestXAPTER
@@ -646,8 +715,17 @@ world_pay_gateway:
   password: PASSWORD
 
 iats_payments:
-  login: TEST88
+  agent_code: TEST88
   password: TEST88
+  region: na
 
 bit_pay:
   api_key: 'rKrahSl7WRrYeKRUhGzbvW3nBzo0jG4FPaL8uPYaoPk'
+
+wirecard_checkout_page:
+  secret: B8AKTPWBRMNBV455FG6M2DANE99WU2
+  shop_id: ''
+  paymenttype: IDL
+
+mollie_ideal:
+  api_key: 'test_8isBjQoJXJoiXRSzjhwKPO1Bo9AkVA'

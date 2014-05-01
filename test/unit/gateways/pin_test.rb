@@ -42,7 +42,7 @@ class PinTest < Test::Unit::TestCase
   end
 
   def test_supported_cardtypes
-    assert_equal [:visa, :master], PinGateway.supported_cardtypes
+    assert_equal [:visa, :master, :american_express], PinGateway.supported_cardtypes
   end
 
   def test_display_name
@@ -202,7 +202,7 @@ class PinTest < Test::Unit::TestCase
     assert_equal @credit_card.month, post[:card][:expiry_month]
     assert_equal @credit_card.year, post[:card][:expiry_year]
     assert_equal @credit_card.verification_value, post[:card][:cvc]
-    assert_equal "#{@credit_card.first_name} #{@credit_card.last_name}", post[:card][:name]
+    assert_equal @credit_card.name, post[:card][:name]
   end
 
   def test_add_creditcard_with_card_token

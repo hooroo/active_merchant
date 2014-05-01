@@ -7,7 +7,7 @@ module ActiveMerchant #:nodoc:
       self.default_currency = 'AUD'
       self.money_format = :cents
       self.supported_countries = ['AU']
-      self.supported_cardtypes = [:visa, :master]
+      self.supported_cardtypes = [:visa, :master, :american_express]
       self.homepage_url = 'http://www.pin.net.au/'
       self.display_name = 'Pin'
 
@@ -90,7 +90,7 @@ module ActiveMerchant #:nodoc:
             :expiry_month => creditcard.month,
             :expiry_year => creditcard.year,
             :cvc => creditcard.verification_value,
-            :name => "#{creditcard.first_name} #{creditcard.last_name}"
+            :name => creditcard.name
           )
         elsif creditcard.kind_of?(String)
           if creditcard =~ /^card_/

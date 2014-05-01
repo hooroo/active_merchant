@@ -1,5 +1,159 @@
 = ActiveMerchant CHANGELOG
 
+* Merchant Warrior: Scrub names [duff]
+* Validate Gateway.supported_countries [rwdaigle]
+* Stripe: Add recurring flag support [bslobodin]
+
+== Version 1.43.0 (April 24, 2014)
+
+* PagSeguro: New offsite integration [celsodantas]
+* Sage Pay: Fix amount parsing in notifications [berkcaputcu]
+* Sage Pay: Use API v3.00 [bslobodin]
+* BridgePay: Switch method of success detection [markabe]
+* BridgePay: Use Return as TransType for refunds [markabe]
+* IATS: Complete rewrite using first class API [rwdaigle]
+* IATS: Fix invalid country code UK -> GB [rwdaigle]
+* DataCash: Fix refund processing using original authorization [bslobodin]
+* Transnational gateway renamed to Network Merchants [bslobodin]
+* PayMill: Handle non-JSON server responses [bslobodin]
+
+== Version 1.42.9 (April 15, 2014)
+
+* Spreedly: Add ip, description and gateway_specific_fields [faizalzakaria]
+* Sage (US): Support store/unstore of cards [rwdaigle]
+* Pin: Add american express to supported cards [nagash]
+* Raven: Update handling of CVV/AVS [bslobodin]
+* Raven: Use UUID for RequestID [bslobodin]
+
+== Version 1.42.8 (April 4, 2014)
+
+* Cecabank: Handle invalid xml response body [duff]
+* Wirecard: Capture error code in the response [duff]
+* Litle: Remove gem dependency [duff]
+* Litle: Fix case of missing address parts [duff]
+* Universal: Add universal offsite API implementation [bslobodin]
+* Iridium: Add more currencies [bslobodin]
+* iDeal: Add Mollie iDeal offsite implementation [wvanbergen, maartenvg]
+
+== Version 1.42.7 (March 18, 2014)
+
+* SagePay: Add support for ReferrerID [markabe]
+* Cecabank: Fix expiration date formatting [duff]
+* Add WePay gateway [faizalzakaria]
+* SmartPs: Add ECI option to SmartPs [odorcicd]
+* Rescue and re-raise ActionViewHelperError when offsite helpers raise an error [odorcicd]
+* Add FirstGiving gateway [faizalzakaria]
+* FirstGiving: Fix refunds [ntalbott]
+* Samurai: Handle server errors [ntalbott]
+* WePay: Fix refund [duff]
+
+== Version 1.42.6 (February 24, 2014)
+
+* Litle: Truncate order_id [duff]
+* Conekta: Fix #refund; respect :currency [leofischer]
+* SagePay: Truncate description field [duff]
+* Add Cecabank gateway [molpe]
+* Add Openpay [darkaz]
+* Openpay: Simplify test versus production mode [duff]
+* Wirecard: Handle a utf-8 description [duff]
+* Litle: Partial capture support [ttdonovan]
+* Ogone: Allow D3D for alias purchases [pwoestelandt]
+* USAePay Advanced: Fix verification_value mapping [dppcode]
+* Orbital: Add additional success conditions [boone]
+* Orbital: Handle special CVV responses [boone]
+* Balanced: Allow working with balanced.js [michaelherold]
+* Balanced: Allow passing customer name [michaelherold]
+* Balanced: Add support for meta [michaelherold]
+* Improve gateway generator [ntalbott]
+* Add maxiPago gateway [alexandremcosta]
+* Authorize.Net: Remove x_test_request support [ntalbott]
+* Conekta: Add default description [bslobodin]
+* Add PayDollar integration [bslobodin]
+
+== Version 1.42.5 (February 7th, 2014)
+
+* Add Doku Indonesia [bizla]
+* Cardstream: Update gateway to use latest API [odorcicd]
+
+== Version 1.42.4 (January 8th, 2014)
+
+* DataCash: Set 'ecomm' as capturemethod [DavidGeukers]
+* Cybersource: Fix subscriptions with a setup fee [ntalbott]
+* Stripe: Do not pass customer details to the /cards endpoint [michellebu]
+* Stripe: Allow Stripe API version to be initialized with the gateway [odorcicd]
+
+== Version 1.42.3 (December 18th, 2013)
+
+* Balanced: Add support for appears_on_statement_as [duff]
+* Authorize.Net: Make already actioned responses failures [odorcicd]
+* Add Payex gateway [atomgiant]
+* Paymill: Fix authorizations [duff]
+* Braintree Blue: Allow specifying the credit card token [ntalbott]
+* Braintree Blue: Allow specifying the customer id [ntalbott]
+* Braintree Blue: Scrub invalid emails and zips [ntalbott]
+* Braintree Blue: Return :credit_card_token as a top level param [ntalbott]
+* Braintree Blue: Allow unstoring just a credit card [ntalbott]
+* Braintree Blue: #store adds cards to existing customers [ntalbott]
+* USA ePay Advanced: Fix check handling [nearapogee]
+* USA ePay Advanced: Fix credit card expiration handling [nearapogee]
+* USA ePay Advanced: Fix handling of custom transaction responses for single items [nearapogee]
+* USA ePay Advanced: Fix capture amount [nearapogee]
+* NAB Transact: Fix merchant descriptor with capture/refund requests [nagash]
+* Braintree Blue: Add custom_fields & device_data parameters [parallel588]
+* Webpay: Add authorize & capture [keikubo]
+* MerchantWarrior: Pass description [duff]
+* Stripe: Separate email from description [duff]
+* Add Payscout gateway [llopez]
+* Merchant Warrior: Use billing_address [duff]
+* Add SoEasyPay gateway [ir-soeasycorp]
+* Bogus: Add check support [npverni]
+* Payflow: Add Check support [crazyivan]
+* Stripe: Allow expanding objects inline [odorcicd]
+
+== Version 1.42.2 (November 13th, 2013)
+
+* Renew public certificate
+
+== Version 1.42.1 (November 13th, 2013)
+
+* Signed version of 1.42.0
+
+== Version 1.42.0 (November 13th, 2013)
+
+* Fix NoMethodError "tr" for params with dash [TimothyKlim]
+* Authorize.Net: Add cardholder authentication options (CAVV) support [structure]
+* CardStreamModern: Added better checks on inputs from the gateway [ExxKA]
+* Stripe: Send :ip to the gateway instead of :browser_ip [f3ndot]
+* Wirecard Page: new offsite gateway [mbretter]
+* Mercury: Add support for requesting a token [kcdragon]
+* Add App55 gateway [ianbutler55]
+* UsaEpayTransaction: Support for split payments [GBH]
+* Add Swipe Checkout gateway [matt-optimizerhq]
+* Spreedly Core: Allow overriding the gateway token when running a transaction [hoenth]
+* Spreedly Core: Add order_id [hoenth]
+* Spreedly Core: Allow store without retain [hoenth]
+* Stripe: Support multiple cards on account [pierre]
+* Stripe: Add card_id parameter to unstore call [pierre]
+* Remove usage of `uname -a` [ntalbott]
+* Litle: Allow easier access to the response code [duff]
+* Stripe: Add the option to pass a version header [odorcicd]
+* Elavon: Update supported countries [duff]
+* Add Raven PacNet gateway [llopez]
+* BitPay: Fix BitPay issues and implement Notification#acknowledge [odorcicd]
+
+== Version 1.41.0 (October 24th, 2013)
+
+* Stripe: Payments won't fail when specifying a customer with a creditcard number [melari]
+* Add Conekta gateway [leofischer]
+* Wirecard: Add support for void and refund [duff]
+* Orbital: Mandatory field fix [juicedM3, jduff]
+
+== Version 1.40.0 (October 18th, 2013)
+
+* Paymill: Revert Add support for specifying the :customer [melari]
+* Quickpay: Make v7 of the API default [kvs]
+* Bitpay: Add return [tahnok]
+
 == Version 1.39.2 (October 10th, 2013)
 
 * Eway Rapid: Fix a bug with access codes that have equal signs in them [odorcic]
@@ -1249,4 +1403,3 @@ value [jduff]
 * Credit card validation methods as static methods of the credit card object
 
 == PlanetArgon fork for integrating Merchant eSolutions gateway
-

@@ -131,6 +131,7 @@ module ActiveMerchant #:nodoc:
         post = {}
         post[:amount] = money
         post[:description] = options[:description]
+        add_common_params(post, options)
 
         create_or_find_account(post, options)
         add_credit_card(post, credit_card, options)
@@ -160,6 +161,12 @@ module ActiveMerchant #:nodoc:
       #   purchase.
       # * <tt>account_uri</tt> -- `account_uri` is the URI of an existing
       #   Balanced account.
+      #
+      # If you are passing a new card URI from balanced.js, you should pass
+      # the customer's name
+      #
+      # * <tt>name</tt> -- the customer's name, to appear on the Account
+      #   on Balanced.
       def purchase(money, credit_card, options = {})
         if credit_card.respond_to?('number')
           requires!(options, :email) unless options[:account_uri]
@@ -168,6 +175,7 @@ module ActiveMerchant #:nodoc:
         post = {}
         post[:amount] = money
         post[:description] = options[:description]
+        add_common_params(post, options)
 
         create_or_find_account(post, options)
         add_credit_card(post, credit_card, options)
@@ -197,7 +205,7 @@ module ActiveMerchant #:nodoc:
         post[:hold_uri] = authorization
         post[:amount] = money if money
         post[:description] = options[:description] if options[:description]
-        post[:on_behalf_of_uri] = options[:on_behalf_of_uri] if options[:on_behalf_of_uri]
+        add_common_params(post, options)
 
         create_transaction(:post, @debits_uri, post)
       rescue Error => ex
@@ -213,6 +221,7 @@ module ActiveMerchant #:nodoc:
       def void(authorization, options = {})
         post = {}
         post[:is_void] = true
+        add_common_params(post, options)
 
         create_transaction(:put, authorization, post)
       rescue Error => ex
@@ -246,6 +255,7 @@ module ActiveMerchant #:nodoc:
         post[:debit_uri] = debit_uri
         post[:amount] = amount
         post[:description] = options[:description]
+        add_common_params(post, options)
         create_transaction(:post, @refunds_uri, post)
       rescue Error => ex
         failed_response(ex.response)
@@ -261,11 +271,17 @@ module ActiveMerchant #:nodoc:
         post = {}
         account_uri = create_or_find_account(post, options)
         if credit_card.respond_to? :number
-          add_credit_card(post, credit_card, options)
+          card_uri = add_credit_card(post, credit_card, options)
         else
-          associate_card_to_account(account_uri, credit_card)
-          credit_card
+          card_uri = associate_card_to_account(account_uri, credit_card)
         end
+
+        is_test = false
+        if @marketplace_uri
+          is_test = (@marketplace_uri.index("TEST") ? true : false)
+        end
+
+        Response.new(true, "Card stored", {}, :test => is_test, :authorization => [card_uri, account_uri].compact.join(';'))
       rescue Error => ex
         failed_response(ex.response)
       end
@@ -299,7 +315,9 @@ module ActiveMerchant #:nodoc:
         end
 
         if account_uri == nil
+          post[:name] = options[:name] if options[:name]
           post[:email_address] = options[:email]
+          post[:meta] = options[:meta] if options[:meta]
 
           # create an account
           response = http_request(:post, @accounts_uri, post)
@@ -329,6 +347,15 @@ module ActiveMerchant #:nodoc:
         end
       end
 
+      def add_common_params(post, options)
+        common_params = [
+          :appears_on_statement_as,
+          :on_behalf_of_uri,
+          :meta
+        ]
+        post.update(options.select{|key, _| common_params.include?(key)})
+      end
+
       def add_credit_card(post, credit_card, options)
         if credit_card.respond_to? :number
           card = {}
@@ -350,6 +377,7 @@ module ActiveMerchant #:nodoc:
 
           post[:card_uri] = card_uri
         elsif credit_card.kind_of?(String)
+          associate_card_to_account(post[:account_uri], credit_card) unless options[:account_uri]
           post[:card_uri] = credit_card
         end
 

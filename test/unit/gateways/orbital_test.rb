@@ -22,6 +22,26 @@ class OrbitalGatewayTest < Test::Unit::TestCase
     assert_equal '4A5398CF9B87744GG84A1D30F2F2321C66249416;1', response.authorization
   end
 
+  def test_currency_exponents
+    stub_comms do
+      @gateway.purchase(50, credit_card, :order_id => '1')
+    end.check_request do |endpoint, data, headers|
+      assert_match /<CurrencyExponent>2<\/CurrencyExponent>/, data
+    end.respond_with(successful_purchase_response)
+
+    stub_comms do
+      @gateway.purchase(50, credit_card, :order_id => '1', :currency => 'CAD')
+    end.check_request do |endpoint, data, headers|
+      assert_match /<CurrencyExponent>2<\/CurrencyExponent>/, data
+    end.respond_with(successful_purchase_response)
+
+    stub_comms do
+      @gateway.purchase(50, credit_card, :order_id => '1', :currency => 'JPY')
+    end.check_request do |endpoint, data, headers|
+      assert_match /<CurrencyExponent>0<\/CurrencyExponent>/, data
+    end.respond_with(successful_purchase_response)
+  end
+
   def test_unauthenticated_response
     @gateway.expects(:ssl_post).returns(failed_purchase_response)
 
@@ -259,6 +279,30 @@ class OrbitalGatewayTest < Test::Unit::TestCase
     assert_success response
   end
 
+  def test_currency_code_and_exponent_are_set_for_profile_purchase
+    @gateway.options[:customer_profiles] = true
+    response = stub_comms do
+      @gateway.purchase(50, nil, :order_id => 1, :customer_ref_num => @customer_ref_num)
+    end.check_request do |endpoint, data, headers|
+      assert_match(/<CustomerRefNum>ABC/, data)
+      assert_match(/<CurrencyCode>124/, data)
+      assert_match(/<CurrencyExponent>2/, data)
+    end.respond_with(successful_purchase_response)
+    assert_success response
+  end
+
+  def test_currency_code_and_exponent_are_set_for_profile_authorizations
+    @gateway.options[:customer_profiles] = true
+    response = stub_comms do
+      @gateway.authorize(50, nil, :order_id => 1, :customer_ref_num => @customer_ref_num)
+    end.check_request do |endpoint, data, headers|
+      assert_match(/<CustomerRefNum>ABC/, data)
+      assert_match(/<CurrencyCode>124/, data)
+      assert_match(/<CurrencyExponent>2/, data)
+    end.respond_with(successful_purchase_response)
+    assert_success response
+  end
+
   #   <AVSzip>K1C2N6</AVSzip>
   #   <AVSaddress1>1234 My Street</AVSaddress1>
   #   <AVSaddress2>Apt 1</AVSaddress2>
@@ -408,10 +452,29 @@ class OrbitalGatewayTest < Test::Unit::TestCase
     assert_success response
   end
 
+  ActiveMerchant::Billing::OrbitalGateway::APPROVED.each do |resp_code|
+    define_method "test_approval_response_code_#{resp_code}" do
+      @gateway.expects(:ssl_post).returns(successful_purchase_response(resp_code))
+
+      assert response = @gateway.purchase(50, credit_card, :order_id => '1')
+      assert_instance_of Response, response
+      assert_success response
+    end
+  end
+
+  def test_account_num_is_removed_from_response
+    @gateway.expects(:ssl_post).returns(successful_purchase_response)
+
+    response = @gateway.purchase(50, credit_card, :order_id => '1')
+    assert_instance_of Response, response
+    assert_success response
+    assert_nil response.params['account_num']
+  end
+
   private
 
-  def successful_purchase_response
-    %q{<?xml version="1.0" encoding="UTF-8"?><Response><NewOrderResp><IndustryType></IndustryType><MessageType>AC</MessageType><MerchantID>700000000000</MerchantID><TerminalID>001</TerminalID><CardBrand>VI</CardBrand><AccountNum>4111111111111111</AccountNum><OrderID>1</OrderID><TxRefNum>4A5398CF9B87744GG84A1D30F2F2321C66249416</TxRefNum><TxRefIdx>1</TxRefIdx><ProcStatus>0</ProcStatus><ApprovalStatus>1</ApprovalStatus><RespCode>00</RespCode><AVSRespCode>H </AVSRespCode><CVV2RespCode>N</CVV2RespCode><AuthCode>091922</AuthCode><RecurringAdviceCd></RecurringAdviceCd><CAVVRespCode></CAVVRespCode><StatusMsg>Approved</StatusMsg><RespMsg></RespMsg><HostRespCode>00</HostRespCode><HostAVSRespCode>Y</HostAVSRespCode><HostCVV2RespCode>N</HostCVV2RespCode><CustomerRefNum></CustomerRefNum><CustomerName></CustomerName><ProfileProcStatus></ProfileProcStatus><CustomerProfileMessage></CustomerProfileMessage><RespTime>144951</RespTime></NewOrderResp></Response>}
+  def successful_purchase_response(resp_code = '00')
+    %Q{<?xml version="1.0" encoding="UTF-8"?><Response><NewOrderResp><IndustryType></IndustryType><MessageType>AC</MessageType><MerchantID>700000000000</MerchantID><TerminalID>001</TerminalID><CardBrand>VI</CardBrand><AccountNum>4111111111111111</AccountNum><OrderID>1</OrderID><TxRefNum>4A5398CF9B87744GG84A1D30F2F2321C66249416</TxRefNum><TxRefIdx>1</TxRefIdx><ProcStatus>0</ProcStatus><ApprovalStatus>1</ApprovalStatus><RespCode>#{resp_code}</RespCode><AVSRespCode>H </AVSRespCode><CVV2RespCode>N</CVV2RespCode><AuthCode>091922</AuthCode><RecurringAdviceCd></RecurringAdviceCd><CAVVRespCode></CAVVRespCode><StatusMsg>Approved</StatusMsg><RespMsg></RespMsg><HostRespCode>00</HostRespCode><HostAVSRespCode>Y</HostAVSRespCode><HostCVV2RespCode>N</HostCVV2RespCode><CustomerRefNum></CustomerRefNum><CustomerName></CustomerName><ProfileProcStatus></ProfileProcStatus><CustomerProfileMessage></CustomerProfileMessage><RespTime>144951</RespTime></NewOrderResp></Response>}
   end
 
   def failed_purchase_response

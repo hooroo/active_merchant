@@ -62,7 +62,7 @@ module ActiveMerchant #:nodoc:
       include Utils
 
       DEBIT_CARDS = [ :switch, :solo ]
-      CURRENCIES_WITHOUT_FRACTIONS = [ 'JPY', 'HUF', 'TWD' ]
+      CURRENCIES_WITHOUT_FRACTIONS = [ 'BIF', 'BYR', 'CLP', 'CVE', 'DJF', 'GNF', 'HUF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'TWD', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF' ]
       CREDIT_DEPRECATION_MESSAGE = "Support for using credit to refund existing transactions is deprecated and will be removed from a future release of ActiveMerchant. Please use the refund method instead."
 
       cattr_reader :implementations
@@ -81,10 +81,6 @@ module ActiveMerchant #:nodoc:
 
       # The default currency for the transactions if no currency is provided
       class_attribute :default_currency
-
-      # The countries of merchants the gateway supports
-      class_attribute :supported_countries
-      self.supported_countries = []
 
       # The supported card types for the gateway
       class_attribute :supported_cardtypes
@@ -114,6 +110,23 @@ module ActiveMerchant #:nodoc:
       def self.card_brand(source)
         result = source.respond_to?(:brand) ? source.brand : source.type
         result.to_s.downcase
+      end
+
+      def self.supported_countries=(country_codes)
+        country_codes.each do |country_code|
+          unless ActiveMerchant::Country.find(country_code)
+            raise ActiveMerchant::InvalidCountryCodeError, "No country could be found for the country #{country_code}"
+          end
+        end
+        @supported_countries = country_codes.dup
+      end
+
+      def self.supported_countries
+        @supported_countries ||= []
+      end
+
+      def supported_countries
+        self.class.supported_countries
       end
 
       def card_brand(source)
@@ -161,7 +174,14 @@ module ActiveMerchant #:nodoc:
 
       def localized_amount(money, currency)
         amount = amount(money)
-        non_fractional_currency?(currency) ? amount.split('.').first : amount
+
+        return amount unless non_fractional_currency?(currency)
+
+        if self.money_format == :cents
+          sprintf("%.0f", amount.to_f / 100)
+        else
+          amount.split('.').first
+        end
       end
 
       def non_fractional_currency?(currency)
