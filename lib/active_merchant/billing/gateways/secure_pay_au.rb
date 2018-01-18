@@ -8,8 +8,8 @@ module ActiveMerchant #:nodoc:
 
       class_attribute :test_periodic_url, :live_periodic_url
 
-      self.test_url = 'https://www.securepay.com.au/test/payment'
-      self.live_url = 'https://www.securepay.com.au/xmlapi/payment'
+      self.test_url = 'https://api.securepay.com.au/test/payment'
+      self.live_url = 'https://api.securepay.com.au/xmlapi/payment'
 
       self.test_periodic_url = 'https://test.securepay.com.au/xmlapi/periodic'
       self.live_periodic_url = 'https://api.securepay.com.au/xmlapi/periodic'
@@ -85,7 +85,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def credit(money, reference, options = {})
-        deprecated CREDIT_DEPRECATION_MESSAGE
+        ActiveMerchant.deprecated CREDIT_DEPRECATION_MESSAGE
         refund(money, reference)
       end
 
@@ -103,13 +103,27 @@ module ActiveMerchant #:nodoc:
         commit_periodic(build_periodic_item(:remove_triggered, options[:amount], nil, options))
       end
 
+      def supports_scrubbing?
+        true
+      end
+
+      def scrub(transcript)
+        transcript.
+          gsub(%r((<merchantID>).+(</merchantID>)), '\1[FILTERED]\2').
+          gsub(%r((<password>).+(</password>)), '\1[FILTERED]\2').
+          gsub(%r((<cardNumber>).+(</cardNumber>)), '\1[FILTERED]\2').
+          gsub(%r((<cvv>).+(</cvv>)), '\1[FILTERED]\2')
+      end
+
       private
 
       def build_purchase_request(money, credit_card, options)
         xml = Builder::XmlMarkup.new
 
-        xml.tag! 'amount', amount(money)
-        xml.tag! 'currency', options[:currency] || currency(money)
+        currency = options[:currency] || currency(money)
+
+        xml.tag! 'amount', localized_amount(money, currency)
+        xml.tag! 'currency', currency
         xml.tag! 'purchaseOrderNo', options[:order_id].to_s.gsub(/[ ']/, '')
 
         xml.tag! 'CreditCardInfo' do
@@ -140,7 +154,7 @@ module ActiveMerchant #:nodoc:
         xml.instruct!
         xml.tag! 'SecurePayMessage' do
           xml.tag! 'MessageInfo' do
-            xml.tag! 'messageID', ActiveMerchant::Utils.generate_unique_id.slice(0, 30)
+            xml.tag! 'messageID', SecureRandom.hex(15)
             xml.tag! 'messageTimestamp', generate_timestamp
             xml.tag! 'timeoutValue', request_timeout
             xml.tag! 'apiVersion', API_VERSION
@@ -199,7 +213,7 @@ module ActiveMerchant #:nodoc:
         xml.instruct!
         xml.tag! 'SecurePayMessage' do
           xml.tag! 'MessageInfo' do
-            xml.tag! 'messageID', ActiveMerchant::Utils.generate_unique_id.slice(0, 30)
+            xml.tag! 'messageID', SecureRandom.hex(15)
             xml.tag! 'messageTimestamp', generate_timestamp
             xml.tag! 'timeoutValue', request_timeout
             xml.tag! 'apiVersion', PERIODIC_API_VERSION

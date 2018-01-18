@@ -12,7 +12,8 @@ class RemoteOptimalPaymentTest < Test::Unit::TestCase
       :order_id => '1',
       :billing_address => address,
       :description => 'Basic Subscription',
-      :email => 'email@example.com'
+      :email => 'email@example.com',
+      :ip => '1.2.3.4'
     }
   end
 
@@ -37,31 +38,17 @@ class RemoteOptimalPaymentTest < Test::Unit::TestCase
     assert_equal 'no_error', response.message
   end
 
-  def test_minimal_successful_purchase
-    options = {
-      :order_id => '1',
-      :description => 'Basic Subscription',
-      :billing_address => {
-        :zip      => 'K1C2N6',
-      }
-    }
-    credit_card = CreditCard.new(
-      :number => '4242424242424242',
-      :month => 9,
-      :year => Time.now.year + 1,
-      :first_name => 'Longbob',
-      :last_name => 'Longsen',
-      :brand => 'visa'
-    )
-    assert response = @gateway.purchase(@amount, credit_card, options)
-    assert_success response
-    assert_equal 'no_error', response.message
-  end
-
   def test_unsuccessful_purchase
     assert response = @gateway.purchase(@declined_amount, @credit_card, @options)
     assert_failure response
     assert_equal 'auth declined', response.message
+  end
+
+  def test_purchase_with_no_cvv
+    @credit_card.verification_value = ''
+    assert response = @gateway.purchase(@amount, @credit_card, @options)
+    assert_success response
+    assert_equal 'no_error', response.message
   end
 
   def test_authorize_and_capture
@@ -148,12 +135,12 @@ class RemoteOptimalPaymentTest < Test::Unit::TestCase
 
   def test_invalid_login
     gateway = OptimalPaymentGateway.new(
-                :account => '1',
-                :login => 'bad',
+                :account_number => '1',
+                :store_id => 'bad',
                 :password => 'bad'
               )
     assert response = gateway.purchase(@amount, @credit_card, @options)
     assert_failure response
-    assert_equal 'invalid credentials', response.message
+    assert_equal 'invalid merchant account', response.message
   end
 end
